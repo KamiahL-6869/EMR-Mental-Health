@@ -1,3 +1,7 @@
+-- Creates a patient contact list to collect basic information
+-- This is a rough draft
+-- Author: Kamiah Long
+-- Date: December 7, 2025
 CREATE TABLE PatientContactList (
     PatientID INTEGER PRIMARY KEY,     -- Unique identifier for each customer
     FirstName TEXT NOT NULL,            -- Customer's first name
