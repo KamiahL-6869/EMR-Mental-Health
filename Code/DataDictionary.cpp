@@ -1,3 +1,15 @@
+/** @file DataDictionary.cpp
+ * @brief Implementation file for concrete DataDictionary implementation
+ *   of the Dictionary container abstraction
+ *
+ * @author Kamiah Long
+ * @note   Project - Dallas Clinic, Fall 2025
+ * @note   IDE  : VSCode Server 3.9.3, Gnu Development Tools
+ * @note   C++ Language Standard Version: C++17
+ * @date   December 7, 2025
+ *
+ * Declares a Data Dictionary.
+ */
 /*******************************************************
  * Generate a Data Dictionary for an EMR Dataset
  * Author: Kamiah L.
@@ -5,6 +17,12 @@
  * Scans a sheet called "EMR_Data" and produces a new 
  * sheet called "Data Dictionary" describing each field.
  *******************************************************/
+#ifndef _DATA_DICTIONARY_CPP_
+#define _DATA_DICTIONARY_CPP_
+
+#include <string>
+#include <iostream>
+using namespace std; 
 
 function createDataDictionary() {
   const sourceSheetName = "EMR_Data";     // Sheet with EMR dataset
@@ -105,7 +123,7 @@ function inferType(values) {
   if (isNum) return "Numeric";
   if (isBool) return "Boolean";
   return "String";
-}
+};
 
 
 /*******************************************************
@@ -115,3 +133,5 @@ function isValidDate(str) {
   const d = new Date(str);
   return !isNaN(d.getTime());
 }
+
+#endif // _DATA_DICTIONARY_CPP_

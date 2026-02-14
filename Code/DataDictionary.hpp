@@ -10,7 +10,7 @@
  *
  * Declares a Data Dictionary.
  */
-#ifdef _DATA_DICTIONARY_HPP_
+#ifndef _DATA_DICTIONARY_HPP_
 #define _DATA_DICTIONARY_HPP_
 
 #include <string>

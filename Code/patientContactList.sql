@@ -15,6 +15,6 @@ CREATE TABLE PatientContactList (
     PostalCode varchar(10),            -- ZIP or postal code
     Country varchar(50) DEFAULT 'United States', -- Default country
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Record creation timestamp
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Last 																					update timestamp
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Last update timestamp
 );
 ...
