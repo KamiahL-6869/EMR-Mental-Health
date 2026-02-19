@@ -34,12 +34,13 @@ public:
     DataDictionary(const string& sourceSheetName,
                    const string& dictSheetName,
                    size_t sampleRows); 
+    void createDataDictionary();
     protected:
     /** @brief Infer data type based on values
      * @param values Vector of values to analyze
      * @return Inferred data type as a string
      */
-    string inferType(const vector<D>& values);  
+    void inferType(const Dictionary<D>& values);  
     /** @brief Test if a string is a date
      * @param str String to test
      * @return True if the string is a valid date, false otherwise

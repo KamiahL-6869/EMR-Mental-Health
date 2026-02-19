@@ -22,9 +22,10 @@
 
 #include <string>
 #include <iostream>
+#include "DataDictionary.hpp"
 using namespace std; 
 
-function createDataDictionary() {
+void createDataDictionary() {
   const sourceSheetName = "EMR_Data";     // Sheet with EMR dataset
   const dictSheetName = "Data Dictionary";// Output sheet name
   const SAMPLE_ROWS = 10;                 // Number of rows to sample
@@ -91,15 +92,15 @@ Logger.log("Sheets in this file: " +
 /*******************************************************
  * Infer data type based on values
  *******************************************************/
-function inferType(values) {
-  if (!Array.isArray(values) || values.length === 0) return "Unknown";
+void inferType(const Dictionary<D>& values) {
+  if (values.empty()) return;
 
-  let isNum = true, isDate = true, isBool = true;
+  bool isNum = true, isDate = true, isBool = true;
 
-  values.forEach(v => {
-    const t = typeof v;
+  for (const auto& v : values) {
+    const auto t = typeid(v).name();
 
-    if (t === "string") {
+    if (t == "string") {
       // Test date
       if (!isValidDate(v)) isDate = false;
 

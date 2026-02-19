@@ -17,4 +17,4 @@ CREATE TABLE PatientContactList (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Record creation timestamp
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Last update timestamp
 );
-...
+
