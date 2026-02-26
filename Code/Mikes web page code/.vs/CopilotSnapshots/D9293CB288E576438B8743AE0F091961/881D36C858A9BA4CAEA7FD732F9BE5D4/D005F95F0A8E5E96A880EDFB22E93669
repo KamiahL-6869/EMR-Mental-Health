@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EMR — Mental Health Communications</title>
+  <style>
+    body{font-family:Segoe UI,Arial;margin:0;padding:0;background:#f3f4f6;color:#111}
+    header{background:#0b5; padding:12px;color:#fff}
+    .container{display:flex;gap:16px;padding:16px}
+    .main{flex:1;background:#fff;border-radius:6px;padding:12px;min-height:400px;overflow:auto}
+    .sidebar{width:280px;background:#fff;border-radius:6px;padding:12px}
+    .message{padding:8px;margin:8px 0;border-radius:6px;max-width:75%;}
+    .message.me{background:#e6f7ff;margin-left:auto}
+    .message.them{background:#fff3cd}
+    .composer{display:flex;gap:8px;margin-top:12px}
+    textarea{flex:1;height:72px;padding:8px}
+    button{padding:8px 12px}
+    .meta{font-size:12px;color:#666}
+  </style>
+</head>
+<body>
+  <header>
+    <div id="patientHeader">Patient: <strong id="patientName">—</strong> • MRN: <span id="mrn">—</span> • Encounter: <span id="enc">—</span></div>
+  </header>
+
+  <div class="container" role="main">
+    <div class="main" id="thread" aria-live="polite" aria-label="Message thread">
+      <!-- messages appended here -->
+    </div>
+
+    <aside class="sidebar">
+      <div><strong>Care team</strong></div>
+      <ul id="careTeam"></ul>
+      <hr />
+      <div><strong>Quick actions</strong></div>
+      <button id="escalateBtn">Escalate to on-call</button>
+    </aside>
+  </div>
+
+  <div style="padding:12px">
+    <div class="composer" aria-label="Message composer">
+      <select id="urgency" aria-label="Urgency">
+        <option value="normal">Normal</option>
+        <option value="urgent">Urgent</option>
+        <option value="emergency">Emergency</option>
+      </select>
+      <textarea id="messageInput" placeholder="Write a secure message..."></textarea>
+      <button id="sendBtn">Send</button>
+    </div>
+    <div class="meta">All messages are secure and audited.</div>
+  </div>
+
+  <script>
+    // Mock data — replace fetch calls with real API endpoints and auth
+    const patient = { id: 'p123', name: 'Jane Doe', mrn: 'MRN001', encounter: 'ENC-78' };
+    const care = ['Dr. Smith (Psychiatrist)', 'Nurse Lee', 'Social Worker'];
+
+    // Current provider (replace token with real auth flow)
+    const currentUser = { id: 'prov1', name: 'You', role: 'clinician', token: 'REPLACE_WITH_BEARER_TOKEN' };
+
+    document.getElementById('patientName').textContent = patient.name;
+    document.getElementById('mrn').textContent = patient.mrn;
+    document.getElementById('enc').textContent = patient.encounter;
+    const ct = document.getElementById('careTeam');
+    care.forEach(c=>{ const li=document.createElement('li'); li.textContent=c; ct.appendChild(li); });
+
+    const threadEl = document.getElementById('thread');
+
+    // Mock message store
+    let messages = [
+      {id:1, from:'Dr. Smith', role:'clinician', text:'Reviewed intake — patient reported increased anxiety.', ts:'2026-02-01T09:12Z'},
+      {id:2, from:'Nurse Lee', role:'nurse', text:'Medication adjusted, follow-up in 48h.', ts:'2026-02-01T10:05Z'}
+    ];
+
+    function renderMessages() {
+      threadEl.innerHTML = '';
+      messages.forEach(m=>{
+        const div = document.createElement('div');
+        div.className = 'message ' + (m.from === currentUser.name ? 'me' : 'them');
+        div.innerHTML = `<div><strong>${escapeHtml(m.from)}</strong> <span class="meta">• ${new Date(m.ts).toLocaleString()}</span></div>` +
+                        `<div>${escapeHtml(m.text)}</div>`;
+        threadEl.appendChild(div);
+      });
+      threadEl.scrollTop = threadEl.scrollHeight;
+    }
+
+    function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    document.getElementById('sendBtn').addEventListener('click', async ()=>{
+      const text = document.getElementById('messageInput').value.trim();
+      const urgency = document.getElementById('urgency').value;
+      if(!text) return;
+      // Build payload using FHIR Communication resource shape
+      const payload = {
+        resourceType: 'Communication',
+        status: 'completed',
+        category: [{coding:[{system:'http://terminology.hl7.org/CodeSystem/communication-category',code:urgency}]}],
+        subject: {reference:`Patient/${patient.id}`},
+        sent: new Date().toISOString(),
+        payload: [{contentString: text}],
+        sender: {reference:`Practitioner/${currentUser.id}`, display: currentUser.name}
+      };
+
+      try {
+        const res = await fetch(`/api/patients/${patient.id}/communications`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${currentUser.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          // assume server returns the created Communication resource
+          const created = await res.json();
+          const textFromPayload = (created.payload && created.payload[0] && created.payload[0].contentString) || text;
+          const fromDisplay = (created.sender && created.sender.display) || currentUser.name;
+          messages.push({id: Date.now(), from: fromDisplay, role: currentUser.role, text: textFromPayload, ts: new Date().toISOString()});
+        } else {
+          // fallback to local append if server returns error
+          messages.push({id: Date.now(), from: currentUser.name, role: currentUser.role, text, ts: new Date().toISOString()});
+        }
+      } catch (err) {
+        // network error — append locally so provider sees message immediately
+        messages.push({id: Date.now(), from: currentUser.name, role: currentUser.role, text, ts: new Date().toISOString()});
+      }
+
+      document.getElementById('messageInput').value = '';
+      renderMessages();
+    });
+
+    // Load messages from server (best-effort). Adapt mapping to your API shape.
+    async function loadMessages() {
+      try {
+        const res = await fetch(`/api/patients/${patient.id}/communications`, {
+          headers: { 'Authorization': `Bearer ${currentUser.token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Map returned communications to the simple message shape used here.
+          messages = data.map(c => ({
+            id: c.id || Date.now(),
+            from: (c.sender && c.sender.display) || (c.from && c.from.display) || (c.participant && c.participant[0] && c.participant[0].display) || 'Unknown',
+            role: (c.sender && c.sender.role) || 'clinician',
+            text: (c.payload && c.payload[0] && c.payload[0].contentString) || '',
+            ts: c.sent || c.authored || new Date().toISOString()
+          }));
+        }
+      } catch (e) {
+        // ignore and keep mock messages
+      }
+      renderMessages();
+    }
+
+    // Initial render
+    renderMessages();
+
+    // TODO: Wire WebSocket or SignalR for live updates; handle role-based hiding of PHI on client for unauthorized users.
+  </script>
+</body>
+</html> 
