@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -38,7 +38,13 @@
     <div class="meta">All messages are secure and audited.</div>
   </div>
 
-  <!-- client will fetch initial data from the server at /api/initialdata -->
+  <!-- initial data injected for client modules; replace with server-side injection or auth flow -->
+  <script>window.__INITIAL_DATA__ = {
+    patient: { id: 'p123', name: 'Jane Doe', mrn: 'MRN001', encounter: 'ENC-78' },
+    care: ['Dr. Smith (Psychiatrist)', 'Nurse Lee', 'Social Worker'],
+    currentUser: { id: 'prov1', name: 'You', role: 'clinician', token: 'REPLACE_WITH_BEARER_TOKEN' }
+  };</script>
+
   <script type="module" src="/js/thread.js"></script>
 </body>
 </html>
