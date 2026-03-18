@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,6 +55,37 @@ app.MapRazorPages()
    .WithStaticAssets();
 
 await app.StartAsync();
-var url = "https://localhost:5001"; // use your app URL or read from config
-Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+
+// Get the actual URL from the running application
+var serverAddresses = app.Urls;
+var url = serverAddresses.FirstOrDefault() ?? "http://localhost:5000";
+
+// Open browser in a cross-platform way
+try
+{
+    var psi = new ProcessStartInfo();
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+    {
+        psi.FileName = "cmd";
+        psi.Arguments = $"/c start {url}";
+    }
+    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+    {
+        psi.FileName = "open";
+        psi.Arguments = url;
+    }
+    else // Linux
+    {
+        psi.FileName = "xdg-open";
+        psi.Arguments = url;
+    }
+    psi.UseShellExecute = true;
+    Process.Start(psi);
+}
+catch
+{
+    // Browser opening failed, but app is still running
+    Console.WriteLine($"Application is running at {url}");
+}
+
 await app.WaitForShutdownAsync();
