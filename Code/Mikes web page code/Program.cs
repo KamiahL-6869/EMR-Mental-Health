@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,79 +17,63 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
-app.UseRouting();
-
-app.UseAuthorization();
-
-// Enable serving static files from wwwroot
 app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
 
 // Serve the HTML page from the web root (wwwroot/HTMLPage1.html)
 app.MapGet("/", () => Results.File(Path.Combine(app.Environment.WebRootPath, "HTMLPage1.html"), "text/html"));
 
 // Simple in-memory store for Communications. Replace with persistent store and auth checks.
-var communications = new List<JsonElement>();
+var communications = new Dictionary<string, list<JsonElement>>();
 
-app.MapGet("/api/patients/{pid}/communications", (string pid) => Results.Ok(communications));
+app.MapGet("/api/patients/{pid}/communications", (string pid) =>
+{
+    if (!communications.ContainsKey(pid))
+        return Results.Ok(new List<jsonElement>());
+    return Results.Ok(communications[pid]);
+});
 
+}
 app.MapPost("/api/patients/{pid}/communications", async (string pid, HttpRequest req) =>
 {
-    try
-    {
-        using var doc = await JsonDocument.ParseAsync(req.Body);
-        var el = doc.RootElement.Clone();
-        communications.Add(el);
-        var id = el.TryGetProperty("id", out var idp) ? idp.GetString() ?? Guid.NewGuid().ToString() : Guid.NewGuid().ToString();
-        return Results.Created($"/api/patients/{pid}/communications/{id}", el);
-    }
+try
+{
+    using var doc = await JsonDocument.ParseAsync(req.Body);
+    var el = doc.RootElement.Clone();
+
+    if (!communications.Containskey(pid))
+        communications[pid] = new List<JsonElement>();
+    communications.Add(el);
+
+    var id = el.TryGetProperty("id", out var idp) ? idp.GetString() ?? Guid.NewGuid().ToString() : Guid.NewGuid().ToString();
+    return Results.Created($"/api/patients/{pid}/communications/{id}", el);
+});
     catch
     {
         return Results.BadRequest();
     }
 });
 
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages();
 
-await app.StartAsync();
+// Determine a URL to open in the browser if possible. Prefer configured urls.
+var configuredUrl = builder.Configuration["urls"]?.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+var urlToOpen = configuredUrl ?? "http://localhost:5000";
 
-// Get the actual URL from the running application
-var serverAddresses = app.Urls;
-var url = serverAddresses.FirstOrDefault() ?? "http://localhost:5000";
-
-// Open browser in a cross-platform way
+// Try to open the browser using a simple cross-platform approach. This is best-effort only.
 try
 {
-    var psi = new ProcessStartInfo();
-    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-    {
-        psi.FileName = "cmd";
-        psi.Arguments = $"/c start {url}";
-    }
-    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-    {
-        psi.FileName = "open";
-        psi.Arguments = url;
-    }
-    else // Linux
-    {
-        psi.FileName = "xdg-open";
-        psi.Arguments = url;
-    }
-    psi.UseShellExecute = true;
-    Process.Start(psi);
+    Process.Start(new ProcessStartInfo { FileName = urlToOpen, UseShellExecute = true });
 }
 catch
 {
-    // Browser opening failed, but app is still running
-    Console.WriteLine($"Application is running at {url}");
+    Console.WriteLine($"Application will start at {urlToOpen}");
 }
 
-await app.WaitForShutdownAsync();
+// Run the app (blocks until shutdown).
+app.Run();
