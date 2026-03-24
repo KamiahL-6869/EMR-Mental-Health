@@ -51,7 +51,7 @@ function renderMessages() {
   threadEl.scrollTop = threadEl.scrollHeight;
 }
 
-document.getElementById('sendBtn').addEventListener('click', async () => {
+async function sendCurrentMessage() {
   const textEl = document.getElementById('messageInput');
   const text = textEl.value.trim();
   const urgency = document.getElementById('urgency').value;
@@ -80,6 +80,18 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
     renderMessages();
   } catch (err) {
     console.warn('send failed, keeping optimistic message', err);
+  }
+}
+
+document.getElementById('sendBtn').addEventListener('click', () => sendCurrentMessage());
+
+// allow Enter to send, Shift+Enter to insert newline
+const messageInputEl = document.getElementById('messageInput');
+messageInputEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    // call send but don't block the key handler
+    sendCurrentMessage();
   }
 });
 
