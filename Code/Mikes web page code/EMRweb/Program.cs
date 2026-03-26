@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,5 +63,16 @@ app.MapRazorPages()
 
 await app.StartAsync();
 var url = "https://localhost:5001"; // use your app URL or read from config
-Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+    Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+}
+else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+{
+    Process.Start("xdg-open", url);
+}
+else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+{
+    Process.Start("open", url);
+}
 await app.WaitForShutdownAsync();
