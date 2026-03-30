@@ -126,14 +126,59 @@
 
         .tabcontent{margin-top:12px}
 
-        .btn {
-            background: var(--pastel-petal);
-            color: var(--space-indigo);
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
+        .btn{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:var(--pastel-petal);
+            color:var(--space-indigo);
+            padding:10px 16px;
+            border-radius:8px;
+            border:1px solid transparent;
+            cursor:pointer;
+            font-weight:600;
+            text-decoration:none;
+            transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+            box-shadow: 0 6px 14px rgba(46,41,78,0.12);
+        }
+
+        .btn:hover{
+            transform:translateY(-2px);
+            box-shadow: 0 14px 30px rgba(46,41,78,0.18);
+        }
+
+
+        .btn.secondary{
+            background:transparent;
+            color:var(--pastel-petal);
+            border-color: rgba(239,188,213,0.18);
+            box-shadow:none;
+        }
+
+        .btn.ghost{
+            background:transparent;
+            color:var(--pastel-petal);
+            border-color:transparent;
+            box-shadow:none;
+        }
+
+     
+
+        /* make native inputs match the button style */
+        input[type="submit"], button[type="submit"]{
+            appearance:none;
+            -webkit-appearance:none;
+            -moz-appearance:none;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:10px 16px;
+            border-radius:8px;
+            border:1px solid transparent;
+            background:var(--pastel-petal);
+            color:var(--space-indigo);
+            font-weight:600;
+            cursor:pointer;
         }
 
         .features {
