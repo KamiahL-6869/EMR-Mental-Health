@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>EMR MENTAL HEALTH</title>
+    <style>
+        :root {
+            --space-indigo: #2E294E; /* deep indigo */
+            --pastel-petal: #EFBCD5; /* soft pink */
+            --lilac: #BE97C6; /* lilac */
+            --lavender: #8661C1; /* lavender purple */
+            --charcoal: #4B5267; /* charcoal blue */
+            --bg: var(--charcoal);
+            --card-bg: rgba(190,151,198,0.12);
+            --max-width: 980px;
+        }
+
+        /* Basic reset */
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, 'Comic Sans MS', sans-serif;
+            background: linear-gradient(180deg,var(--bg),#3f4456);
+            color: var(--lavender);
+            padding: 28px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .page {
+            width: 100%;
+            max-width: var(--max-width);
+            border: 10px solid var(--space-indigo);
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(46,41,78,0.98), rgba(75,82,103,0.95));
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            background: linear-gradient(135deg,var(--lilac),var(--pastel-petal));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--space-indigo);
+            font-size: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--pastel-petal)
+        }
+
+        p.lead {
+            margin: 6px 0 0;
+            color: #EAD7F0
+        }
+
+        .hero {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+            margin: 18px 0 28px;
+        }
+
+            .hero .intro {
+                flex: 1
+            }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px
+        }
+
+        /* Tabs */
+        .tab {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: var(--lavender);
+            border: 1px solid transparent;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+            .tab-btn:hover {
+                background: rgba(190,151,198,0.06);
+                border-color: rgba(190,151,198,0.14);
+            }
+
+            .tab-btn.active, .tab-btn[aria-selected="true"] {
+                background: linear-gradient(90deg,var(--lilac),var(--pastel-petal));
+                color: var(--space-indigo);
+                box-shadow: 0 6px 18px rgba(46,41,78,0.4);
+                border-color: rgba(46,41,78,0.12);
+            }
+
+            .tab-btn:focus {
+                outline: 2px solid rgba(239,188,213,0.32);
+                outline-offset: 2px;
+            }
+
+        .tabcontent {
+            margin-top: 12px
+        }
+
+        .btn {
+            background: var(--pastel-petal);
+            color: var(--space-indigo);
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+            gap: 16px
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(190,151,198,0.28);
+            padding: 16px;
+            border-radius: 10px;
+            color: #F2EAF9;
+        }
+
+        footer {
+            margin-top: 22px;
+            color: #D6C7E8;
+            text-align: center;
+            font-size: 13px
+        }
+
+        @media (max-width:560px) {
+            h1 {
+                font-size: 20px
+            }
+
+            .hero {
+                flex-direction: column;
+                align-items: flex-start
+            }
+        }
+    </style>
+    <!-- Color palette: Space Indigo = 2E294E, Pastel Petal = EFBCD5, Lilac = BE97C6, Lavender Purple = 8661C1, Charcoal Blue = 4B5267 -->
+</head>
+<body>
+    <div class="page">
+        <header>
+            <div class="logo">EMR</div>
+            <div>
+                <h1>EMR Mental Health</h1>
+            </div>
+        </header>
+        <div class="tab" role="tablist" aria-label="Admin tabs">
+            <button type="button" class="tab-btn" data-target="dashboard" aria-selected="true">Dashboard</button>
+            <button type="button" class="tab-btn" data-target="schedule" aria-selected="false">My Schedule</button>
+            <button type="button" class="tab-btn" data-target="users" aria-selected="false">My Patients</button>
+            <button type="button" class="tab-btn" data-target="patchnotes" aria-selected="false">Patch notes</button>
+        </div>
+
+        <section id="dashboard" class="tabcontent">
+            <div class="card">
+                <h2 style="margin-top:0;color:var(--pastel-petal)">Overview</h2>
+                <p>General View</p>
+            </div>
+        </section>
+
+        <section id="schedule" class="tabcontent" hidden>
+            <div class="card">
+                <h2 style="margin-top:0;color:var(--pastel-petal)">My Schedule</h2>
+                <p>Appointments, shifts, and calendar actions live here.</p>
+            </div>
+        </section>
+
+        <section id="users" class="tabcontent" hidden>
+            <div class="card">
+                <h2 style="margin-top:0;color:var(--pastel-petal)">My Patients</h2>
+                <p>Manage user accounts, roles, and permissions.</p>
+            </div>
+        </section>
+        <section id="patchnotes" class="tabcontent">
+            <div class="card">
+                <h2 style="margin-top:0;color:var(--pastel-petal)">Patch notes</h2>
+                <p>Version 0.0.0 Updated by Clover</p>
+            </div>
+        </section>
+        <script>
+            // Simple accessible tabs
+            (function(){
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tabcontent');
+
+            function show(targetId){
+            contents.forEach(c=>{
+            if(c.id === targetId){ c.hidden = false; }
+            else { c.hidden = true; }
+            });
+            tabs.forEach(t=>{
+            const selected = t.getAttribute('data-target') === targetId;
+            t.classList.toggle('active', selected);
+            t.setAttribute('aria-selected', selected ? 'true' : 'false');
+            });
+            }
+
+            tabs.forEach(t=>{
+            t.addEventListener('click', ()=> show(t.getAttribute('data-target')));
+            });
+
+            // open first tab
+            if(tabs.length) show(tabs[0].getAttribute('data-target'));
+            })();
+        </script>
