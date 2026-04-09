@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Dashboard Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        :root {
+            --space-indigo: #2E294E; /* deep indigo */
+            --pastel-petal: #EFBCD5; /* soft pink */
+            --lilac: #BE97C6; /* lilac */
+            --lavender: #8661C1; /* lavender purple */
+            --charcoal: #4B5267; /* charcoal blue */
+            --bg: var(--charcoal);
+            --card-bg: rgba(190,151,198,0.12);
+            --max-width: 980px;
+        }
+        /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+        body {
+            background-color: var(--bg);
+            color: var(--pastel-petal);
+        }
+
+        /* Sidebar */
+        .sidenav {
+            background-color: var(--charcoal);
+            color: var(--pastel-petal);
+        }
+
+            .sidenav h2 {
+                color: var(--pastel-petal);
+            }
+
+            .sidenav a {
+                color: var(--lilac);
+            }
+
+                .sidenav a:hover {
+                    background-color: var(--lavender);
+                    color: var(--space-indigo);
+                }
+
+        /* Cards */
+        .well {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--lilac);
+            color: var(--pastel-petal);
+        }
+        .well:hover{
+            transform: translatey(-3px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+        }
+
+        /* Navbar */
+        .navbar-inverse {
+            background-color: var(--space-indigo) !important;
+            border-color: var(--lilac) !important;
+        }
+
+            .navbar-inverse .navbar-brand,
+            .navbar-inverse .navbar-nav > li > a {
+                color: var(--pastel-petal) !important;
+            }
+
+            .navbar-inverse .navbar-nav > .active > a {
+                background-color: var(--lavender) !important;
+                color: var(--space-indigo) !important;
+            }
+
+        /* Headings */
+        h2, h4 {
+            color: var(--pastel-petal);
+        }
+
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-inverse visible-xs">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">@username test</a>
+            </div>
+            <div class="collapse navbar-collapse" id="My-Navbar">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">User-Dashboard</a></li>
+                    <li><a href="#">Age</a></li>
+                    <li><a href="#">Gender</a></li>
+                    <li><a href="#">Location</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row content">
+            <div class="col-sm-3 sidenav hidden-xs">
+                <h2>@user Name</h2>
+                <ul class="nav nav-pills nav-stacked">
+                    <li class="active"><a href="#section1">Dashboard</a></li>
+                    <li><a href="#section2">Age</a></li>
+                    <li><a href="#section3">Gender</a></li>
+                    <li><a href="#section3">Location</a></li>
+                </ul><br>
+            </div>
+            <br>
+
+            <div class="col-sm-9">
+                <div class="well">
+                    <h4>Dashboard</h4>
+                    <p>I need text here for long term. </p>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <div class="well">
+                            <h4>Users</h4>
+                            <p>1 Million</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="well">
+                            <h4>Pages</h4>
+                            <p>100 Million</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="well">
+                            <h4>Sessions</h4>
+                            <p>10 Million</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="well">
+                            <h4>Bounce</h4>
+                            <p>30%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="well">
+                            <p>Text</p>
+                            <p>Text</p>
+                            <p>Text</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="well">
+                            <p>Text</p>
+                            <p>Text</p>
+                            <p>Text</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="well">
+                            <p>Text</p>
+                            <p>Text</p>
+                            <p>Text</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="well">
+                            <p>Text</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="well">
+                            <p>Text</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
