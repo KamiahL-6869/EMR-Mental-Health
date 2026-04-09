@@ -12,5 +12,7 @@
     "python.testing.pytestArgs": [
         "Code"
     ],
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "cmake.ignoreCMakeListsMissing": true,
+    "calendar.google.credentialsFile": "C:\\Users\\LongKamiah\\Downloads\\client_secret_578480669092-urj5ehkl2crqbnjlrgl26u14llum6419.apps.googleusercontent.com.json"
 }
