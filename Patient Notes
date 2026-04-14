@@ -1,0 +1,127 @@
+<!-- This is a section for patient notes -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Notes</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        textarea {
+            height: 120px;
+        }
+
+        .btn-group {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .save-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .print-btn {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Patient Notes</h1>
+
+        <h2>Patient Information</h2>
+        <label>Full Name</label>
+        <input type="text">
+
+        <label>Date of Birth</label>
+        <input type="date">
+
+        <label>Patient ID</label>
+        <input type="text">
+
+        <h2>Vitals</h2>
+        <label>Blood Pressure</label>
+        <input type="text">
+
+        <label>Heart Rate</label>
+        <input type="text">
+
+        <label>Temperature</label>
+        <input type="text">
+
+        <label>Respiratory Rate</label>
+        <input type="text">
+
+        <h2>SOAP Notes</h2>
+        <label>Subjective</label>
+        <textarea></textarea>
+
+        <label>Objective</label>
+        <textarea></textarea>
+
+        <label>Assessment</label>
+        <textarea></textarea>
+
+        <label>Plan</label>
+        <textarea></textarea>
+
+        <div class="btn-group">
+            <button class="save-btn" onclick="saveNotes()">Save Notes</button>
+            <button class="print-btn" onclick="window.print()">Print</button>
+        </div>
+    </div>
+
+    <script>
+        function saveNotes() {
+            alert("Notes saved (placeholder). You can connect this to a backend later.");
+        }
+    </script>
+</body>
+</html>
