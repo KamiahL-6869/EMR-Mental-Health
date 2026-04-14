@@ -4,28 +4,26 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>EMR MENTAL HEALTH</title>
+    <title>EMR Mental Health</title>
+
     <style>
         :root {
-            --space-indigo: #2E294E; /* deep indigo */
-            --pastel-petal: #EFBCD5; /* soft pink */
-            --lilac: #BE97C6; /* lilac */
-            --lavender: #8661C1; /* lavender purple */
-            --charcoal: #4B5267; /* charcoal blue */
+            --space-indigo: #2E294E;
+            --pastel-petal: #EFBCD5;
+            --lilac: #BE97C6;
+            --lavender: #8661C1;
+            --charcoal: #4B5267;
             --bg: var(--charcoal);
             --card-bg: rgba(190,151,198,0.12);
             --max-width: 980px;
         }
 
-        /* Basic reset */
-        * {
-            box-sizing: border-box
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
             font-family: Inter, 'Comic Sans MS', sans-serif;
-            background: linear-gradient(180deg,var(--bg),#3f4456);
+            background: linear-gradient(180deg, var(--bg), #3f4456);
             color: var(--lavender);
             padding: 28px;
             display: flex;
@@ -53,7 +51,7 @@
             width: 64px;
             height: 64px;
             border-radius: 12px;
-            background: linear-gradient(135deg,var(--lilac),var(--pastel-petal));
+            background: linear-gradient(135deg, var(--lilac), var(--pastel-petal));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -65,132 +63,49 @@
         h1 {
             margin: 0;
             font-size: 24px;
-            color: var(--pastel-petal)
+            color: var(--pastel-petal);
         }
 
-        p.lead {
-            margin: 6px 0 0;
-            color: #EAD7F0
+        .loginpage h2 {
+            color: var(--lavender);
+            margin: 0 0 10px;
         }
 
-        .hero {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            justify-content: space-between;
-            margin: 18px 0 28px;
+        .login input, .login button {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(239,188,213,0.18);
+            font-size: 15px;
         }
 
-            .hero .intro {
-                flex: 1
-            }
-
-        .actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 14px
+        .login button {
+            background: var(--pastel-petal);
+            color: var(--space-indigo);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s ease;
         }
 
-        .btn {
-            display:inline-flex;
-            align-items:center;
-            gap:8px;
-            background:var(--pastel-petal);
-            color:var(--space-indigo);
-            padding:10px 16px;
-            border-radius:8px;
-            border:1px solid transparent;
-            cursor:pointer;
-            font-weight:600;
-            text-decoration:none;
-            transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
-            box-shadow: 0 6px 14px rgba(46,41,78,0.12);
-        }
-
-        .btn:hover{
-            transform:translateY(-2px);
-            box-shadow: 0 14px 30px rgba(46,41,78,0.18);
-        }
-
-        .btn:active{ transform:translateY(0); }
-
-        .btn:focus{
-            outline:3px solid rgba(239,188,213,0.22);
-            outline-offset:3px;
-        }
-
-        .btn.secondary{
-            background:transparent;
-            color:var(--pastel-petal);
-            border-color: rgba(239,188,213,0.18);
-            box-shadow:none;
-        }
-
-        .btn.ghost{
-            background:transparent;
-            color:var(--pastel-petal);
-            border-color:transparent;
-            box-shadow:none;
-        }
-
-        .btn[disabled], .btn:disabled{
-            opacity:0.55;
-            cursor:not-allowed;
-            transform:none;
-            box-shadow:none;
-        }
-
-        /* make native inputs match the button style */
-        input[type="submit"], button[type="submit"]{
-            appearance:none;
-            -webkit-appearance:none;
-            -moz-appearance:none;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            padding:10px 16px;
-            border-radius:8px;
-            border:1px solid transparent;
-            background:var(--pastel-petal);
-            color:var(--space-indigo);
-            font-weight:600;
-            cursor:pointer;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-            gap: 16px
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid rgba(190,151,198,0.28);
-            padding: 16px;
-            border-radius: 10px;
-            color: #F2EAF9;
+        .login button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(46,41,78,0.18);
         }
 
         footer {
             margin-top: 22px;
             color: #D6C7E8;
             text-align: center;
-            font-size: 13px
+            font-size: 13px;
         }
 
         @media (max-width:560px) {
-            h1 {
-                font-size: 20px
-            }
-
-            .hero {
-                flex-direction: column;
-                align-items: flex-start
-            }
+            h1 { font-size: 20px; }
         }
     </style>
-    <!-- Color palette: Space Indigo = 2E294E, Pastel Petal = EFBCD5, Lilac = BE97C6, Lavender Purple = 8661C1, Charcoal Blue = 4B5267 -->
 </head>
+
 <body>
     <div class="page">
         <header>
@@ -199,25 +114,23 @@
                 <h1>EMR Mental Health</h1>
             </div>
         </header>
-<section class="loginpage">
-    <div class="login">
-        <h2 style="color:var(--lavender);margin:0 0 6px">Login using your credientals</h2>
-        <form>
-            <label for="uname">User Name:</label><br>
-            <input type="text" id="uname" name="uname"><br>
-            <label for="pass">Password:</label><br />
-            <input type="password" id="pass" name="pass"><br>
-            <input type="submit" value="Submit">
-        </form>
-        
-        <!-- Here is where you will implement a Login Function then connect it to the database-->
-        <!-- Function cannot be added here. It would need a PHP backend -->
-         <form action="login.php" method="POST">
-            <input type="text" name="username" placeholder="Username" required>
 
-            <input type="password" name="password" placeholder="Password" required>
+        <section class="loginpage">
+            <div class="login">
+                <h2>Login using your credentials</h2>
 
-            <button type="submit">Log In</button>
-        </form> <!-- This is the form that will be used to send the login data to the backend -->
+                <!-- Login Form -->
+                <form action="login.php" method="POST">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+
+                    <button type="submit">Log In</button>
+                </form>
+            </div>
+        </section>
     </div>
-</section>
+</body>
+</html>
