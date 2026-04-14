@@ -3,134 +3,157 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>EMR Mental Health</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EMR Mental Health – Secure Login</title>
 
     <style>
         :root {
-            --space-indigo: #2E294E;
-            --pastel-petal: #EFBCD5;
-            --lilac: #BE97C6;
-            --lavender: #8661C1;
-            --charcoal: #4B5267;
-            --bg: var(--charcoal);
-            --card-bg: rgba(190,151,198,0.12);
-            --max-width: 980px;
+            --primary: #1A3D6B;        /* Hospital blue */
+            --primary-light: #2F5C9A;
+            --accent: #4BA3E3;         /* Calm medical blue */
+            --background: #F4F7FA;     /* Clean clinical gray */
+            --card-bg: #FFFFFF;
+            --border: #D3D9E3;
+            --text-dark: #1F2A36;
+            --text-light: #6B7A8C;
+            --radius: 10px;
         }
 
         * { box-sizing: border-box; }
 
         body {
             margin: 0;
-            font-family: Inter, 'Comic Sans MS', sans-serif;
-            background: linear-gradient(180deg, var(--bg), #3f4456);
-            color: var(--lavender);
-            padding: 28px;
+            font-family: "Segoe UI", Inter, sans-serif;
+            background: var(--background);
             display: flex;
             justify-content: center;
+            padding: 40px;
         }
 
-        .page {
+        /* Top hospital header bar */
+        .header-bar {
             width: 100%;
-            max-width: var(--max-width);
-            border: 10px solid var(--space-indigo);
-            border-radius: 10px;
-            background: linear-gradient(180deg, rgba(46,41,78,0.98), rgba(75,82,103,0.95));
-            padding: 28px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-        }
-
-        header {
+            max-width: 1100px;
+            background: var(--primary);
+            padding: 18px 26px;
+            border-radius: var(--radius);
+            color: white;
             display: flex;
             align-items: center;
-            gap: 18px;
-            margin-bottom: 20px;
+            gap: 16px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
         }
 
-        .logo {
-            width: 64px;
-            height: 64px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--lilac), var(--pastel-petal));
+        .header-logo {
+            width: 54px;
+            height: 54px;
+            border-radius: 8px;
+            background: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            color: var(--space-indigo);
             font-size: 20px;
+            color: white;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 24px;
-            color: var(--pastel-petal);
+        .header-title {
+            font-size: 22px;
+            font-weight: 600;
         }
 
-        .loginpage h2 {
-            color: var(--lavender);
-            margin: 0 0 10px;
-        }
-
-        .login input, .login button {
+        /* Login card */
+        .login-card {
             width: 100%;
-            padding: 10px;
-            margin: 6px 0 14px;
-            border-radius: 8px;
-            border: 1px solid rgba(239,188,213,0.18);
+            max-width: 420px;
+            background: var(--card-bg);
+            margin: 40px auto;
+            padding: 32px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .login-card h2 {
+            margin: 0 0 14px;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .login-card p {
+            margin: 0 0 20px;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        label {
+            font-size: 14px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0 18px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
             font-size: 15px;
         }
 
-        .login button {
-            background: var(--pastel-petal);
-            color: var(--space-indigo);
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.15s ease;
         }
 
-        .login button:hover {
+        button:hover {
+            background: var(--primary-light);
             transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(46,41,78,0.18);
         }
 
-        footer {
-            margin-top: 22px;
-            color: #D6C7E8;
+        .footer {
             text-align: center;
+            margin-top: 20px;
+            color: var(--text-light);
             font-size: 13px;
-        }
-
-        @media (max-width:560px) {
-            h1 { font-size: 20px; }
         }
     </style>
 </head>
 
 <body>
-    <div class="page">
-        <header>
-            <div class="logo">EMR</div>
-            <div>
-                <h1>EMR Mental Health</h1>
-            </div>
-        </header>
 
-        <section class="loginpage">
-            <div class="login">
-                <h2>Login using your credentials</h2>
-
-                <!-- Login Form -->
-                <form action="login.php" method="POST">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" required>
-
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required>
-
-                    <button type="submit">Log In</button>
-                </form>
-            </div>
-        </section>
+    <div class="header-bar">
+        <div class="header-logo">EMR</div>
+        <div class="header-title">EMR Mental Health – Secure Access Portal</div>
     </div>
+
+    <div class="login-card">
+        <h2>Staff Login</h2>
+        <p>Authorized personnel only. All access is monitored and logged.</p>
+
+        <form action="login.php" method="POST">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Log In</button>
+        </form>
+    </div>
+
+    <div class="footer">
+        © 2025 EMR Mental Health System • HIPAA Compliant Access
+    </div>
+
 </body>
 </html>
