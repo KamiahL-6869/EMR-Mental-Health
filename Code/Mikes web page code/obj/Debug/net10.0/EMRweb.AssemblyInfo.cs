@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EMRweb")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+36282d17869edbf243063b38c3c43db92dbcbb54")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+af07152a464186bbdf30733fc41b4867a6a4486b")]
 [assembly: System.Reflection.AssemblyProductAttribute("EMRweb")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EMRweb")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
