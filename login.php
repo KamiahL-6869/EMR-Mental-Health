@@ -1,3 +1,4 @@
+// This is the login backend file that processes the login form submission and handles user authentication.
 <?php
 include '../database/db_connect.php';
 
