@@ -6,18 +6,18 @@
     <title>EMR MENTAL HEALTH</title>
     <style>
         :root{
-            --space-indigo: #2E294E;   /* deep indigo */
-            --pastel-petal: #EFBCD5;  /* soft pink */
-            --lilac: #BE97C6;         /* lilac */
-            --lavender: #8661C1;     /* lavender purple */
-            --charcoal: #4B5267;     /* charcoal blue */
+            --space-indigo: #2E294E;
+            --pastel-petal: #EFBCD5;
+            --lilac: #BE97C6;
+            --lavender: #8661C1;
+            --charcoal: #4B5267;
             --bg: var(--charcoal);
             --card-bg: rgba(190,151,198,0.12);
             --max-width: 980px;
         }
 
-        /* Basic reset */
         *{box-sizing:border-box}
+
         body{
             margin:0;
             font-family: Inter, 'Comic Sans MS', sans-serif;
@@ -59,7 +59,6 @@
         }
 
         h1{margin:0;font-size:24px;color:var(--pastel-petal)}
-        p.lead{margin:6px 0 0;color:#EAD7F0}
 
         .hero{
             display:flex;
@@ -73,7 +72,6 @@
 
         .actions{display:flex;gap:12px;margin-top:14px}
 
-        /* Button styles */
         .btn{
             display:inline-flex;
             align-items:center;
@@ -95,7 +93,6 @@
             box-shadow: 0 14px 30px rgba(46,41,78,0.18);
         }
 
-
         .btn.secondary{
             background:transparent;
             color:var(--pastel-petal);
@@ -103,47 +100,32 @@
             box-shadow:none;
         }
 
-        .btn.ghost{
-            background:transparent;
-            color:var(--pastel-petal);
-            border-color:transparent;
-            box-shadow:none;
+        .features{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:16px;
         }
 
-
-        /* make native inputs match the button style */
-        input[type="submit"], button[type="submit"]{
-            appearance:none;
-            -webkit-appearance:none;
-            -moz-appearance:none;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            padding:10px 16px;
-            border-radius:8px;
-            border:1px solid transparent;
-            background:var(--pastel-petal);
-            color:var(--space-indigo);
-            font-weight:600;
-            cursor:pointer;
-        }
-
-        .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
         .card{
             background:var(--card-bg);
             border:1px solid rgba(190,151,198,0.28);
-            padding:16px;border-radius:10px;
+            padding:16px;
+            border-radius:10px;
             color:#F2EAF9;
         }
 
-        footer{margin-top:22px;color:#D6C7E8;text-align:center;font-size:13px}
+        footer{
+            margin-top:22px;
+            color:#D6C7E8;
+            text-align:center;
+            font-size:13px;
+        }
 
         @media (max-width:560px){
             h1{font-size:20px}
             .hero{flex-direction:column;align-items:flex-start}
         }
     </style>
-    <!-- Color palette: Space Indigo = 2E294E, Pastel Petal = EFBCD5, Lilac = BE97C6, Lavender Purple = 8661C1, Charcoal Blue = 4B5267 -->
 </head>
 <body>
     <div class="page">
@@ -157,12 +139,23 @@
         <section class="hero">
             <div class="intro">
                 <h2 style="color:var(--lavender);margin:0 0 6px">Welcome</h2>
-                <p style="margin:0;color:#E9DFF7">Clover has no clue what to put here so imagine this is descriptive text also hi</p>
+                <p style="margin:0;color:#E9DFF7">
+                    Clover has no clue what to put here so imagine this is descriptive text also hi
+                </p>
+
                 <div class="actions">
-                    <button type="button" class="btn" onclick="window.location.href='login1.html'">Log In</button>
-                    <button type="button" class="btn" style="background:transparent;color:var(--pastel-petal);border:1px solid rgba(239,188,213,0.2)" onclick="window.location.href='https://docs.google.com/document/d/1b1k0NWspwYsnq8gtGChDM9a-HhbY0ipM/edit?usp=sharing&ouid=102705376259865920435&rtpof=true&sd=true'">Learn more</button>
+                    <!-- FIXED: now correctly links to login.html -->
+                    <button type="button" class="btn" onclick="window.location.href='login.html'">
+                        Log In
+                    </button>
+
+                    <button type="button" class="btn secondary"
+                        onclick="window.location.href='https://docs.google.com/document/d/1b1k0NWspwYsnq8gtGChDM9a-HhbY0ipM/edit?usp=sharing'">
+                        Learn more
+                    </button>
                 </div>
             </div>
+
             <div style="min-width:160px;max-width:220px">
                 <div class="card" style="text-align:center">
                     <strong style="display:block;color:var(--pastel-petal)">Status</strong>
@@ -176,10 +169,12 @@
                 <h3 style="margin-top:0;color:var(--pastel-petal)">Patient Notes</h3>
                 <p>Rant about how crazy some of our patients are they most certainely are!</p>
             </div>
+
             <div class="card">
                 <h3 style="margin-top:0;color:var(--pastel-petal)">Secure Records</h3>
                 <p>Something something security something something bucket.</p>
             </div>
+
             <div class="card">
                 <h3 style="margin-top:0;color:var(--pastel-petal)">Analytics</h3>
                 <p>I hate stats and I wanted a third button.</p>
