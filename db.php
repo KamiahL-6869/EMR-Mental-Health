@@ -1,4 +1,4 @@
-<!-- This will connect the login page to MySQL -->
+<!-- This is the official database where usernames and passwords will be stored -->
 <?php
 $host = "localhost";
 $dbname = "patient_portal";
