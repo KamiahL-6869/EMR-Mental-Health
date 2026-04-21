@@ -9,76 +9,176 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <style>
-        :root {
-            --space-indigo: #2E294E; /* deep indigo */
-            --pastel-petal: #EFBCD5; /* soft pink */
-            --lilac: #BE97C6; /* lilac */
-            --lavender: #8661C1; /* lavender purple */
-            --charcoal: #4B5267; /* charcoal blue */
+        :root{
+            --space-indigo: #2E294E;
+            --pastel-petal: #EFBCD5;
+            --lilac: #BE97C6;
+            --lavender: #8661C1;
+            --charcoal: #4B5267;
             --bg: var(--charcoal);
             --card-bg: rgba(190,151,198,0.12);
             --max-width: 980px;
         }
-        /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
-        body {
-            background-color: var(--bg);
-            color: var(--pastel-petal);
+
+        *{box-sizing:border-box}
+
+        body{
+            margin:0;
+            font-family: Inter, 'Comic Sans MS', sans-serif;
+            background: linear-gradient(180deg,var(--bg),#3f4456);
+            color: var(--lavender);
+            padding:28px;
+            display:flex;
+            justify-content:center;
         }
 
-        /* Sidebar */
-        .sidenav {
-            background-color: var(--charcoal);
-            color: var(--pastel-petal);
+        .page{
+            width:100%;
+            max-width:var(--max-width);
+            border:10px solid var(--space-indigo);
+            border-radius:10px;
+            background: linear-gradient(180deg, rgba(46,41,78,0.98), rgba(75,82,103,0.95));
+            padding:28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
 
-            .sidenav h2 {
-                color: var(--pastel-petal);
-            }
-
-            .sidenav a {
-                color: var(--lilac);
-            }
-
-                .sidenav a:hover {
-                    background-color: var(--lavender);
-                    color: var(--space-indigo);
-                }
-
-        /* Cards */
-        .well {
-            background-color: var(--card-bg) !important;
-            border: 1px solid var(--lilac);
-            color: var(--pastel-petal);
-        }
-        .well:hover{
-            transform: translatey(-3px);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+        header{
+            display:flex;
+            align-items:center;
+            gap:18px;
+            margin-bottom:20px;
         }
 
-        /* Navbar */
-        .navbar-inverse {
-            background-color: var(--space-indigo) !important;
-            border-color: var(--lilac) !important;
+        .logo{
+            width:64px;
+            height:64px;
+            border-radius:12px;
+            background: linear-gradient(135deg,var(--lilac),var(--pastel-petal));
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:700;
+            color:var(--space-indigo);
+            font-size:20px;
         }
 
-            .navbar-inverse .navbar-brand,
-            .navbar-inverse .navbar-nav > li > a {
-                color: var(--pastel-petal) !important;
-            }
+        h1{margin:0;font-size:24px;color:var(--pastel-petal)}
 
-            .navbar-inverse .navbar-nav > .active > a {
-                background-color: var(--lavender) !important;
-                color: var(--space-indigo) !important;
-            }
-
-        /* Headings */
-        h2, h4 {
-            color: var(--pastel-petal);
+        .hero{
+            display:flex;
+            gap:20px;
+            align-items:center;
+            justify-content:space-between;
+            margin:18px 0 28px;
         }
-        
+
+        .hero .intro{flex:1}
+
+        .actions{display:flex;gap:12px;margin-top:14px}
+
+        .btn.custom{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:var(--pastel-petal);
+            color:var(--space-indigo);
+            padding:10px 16px;
+            border-radius:8px;
+            border:1px solid transparent;
+            cursor:pointer;
+            font-weight:600;
+            text-decoration:none;
+            transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+            box-shadow: 0 6px 14px rgba(46,41,78,0.12);
+        }
+
+        .btn.custom:hover{
+            transform:translateY(-2px);
+            box-shadow: 0 14px 30px rgba(46,41,78,0.18);
+        }
+
+        .btn.secondary{
+            background:transparent;
+            color:var(--pastel-petal);
+            border-color: rgba(239,188,213,0.18);
+            box-shadow:none;
+        }
+
+        .features{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:16px;
+        }
+
+        .card{
+            background:var(--card-bg);
+            border:1px solid rgba(190,151,198,0.28);
+            padding:16px;
+            border-radius:10px;
+            color:#F2EAF9;
+        }
+
+        footer{
+            margin-top:22px;
+            color:#D6C7E8;
+            text-align:center;
+            font-size:13px;
+        }
+
+        /* Minor adjustments to fit old bootstrap layout */
+        .sidenav h2{margin-top:0;color:var(--pastel-petal)}
+        .well{background:transparent;border:1px solid rgba(190,151,198,0.12);}
+
+        /* Nav link theming to replace default bootstrap blue */
+        /* Stronger nav link theming to replace default bootstrap blue */
+        body .nav.nav-pills.nav-stacked > li > a,
+        body .navbar-inverse .navbar-nav > li > a{
+            color: var(--lavender) !important;
+            background: transparent !important;
+            border-radius: 8px;
+        }
+
+        body .nav.nav-pills.nav-stacked > li > a:hover,
+        body .navbar-inverse .navbar-nav > li > a:hover{
+            background: rgba(190,151,198,0.06) !important;
+            color: var(--pastel-petal) !important;
+        }
+
+        body .nav.nav-pills.nav-stacked > li.active > a,
+        body .navbar-inverse .navbar-nav > .active > a{
+            background: linear-gradient(90deg,var(--lilac),var(--pastel-petal)) !important;
+            color: var(--space-indigo) !important;
+            box-shadow: 0 6px 18px rgba(46,41,78,0.2) !important;
+            border-color: rgba(46,41,78,0.08) !important;
+        }
+
+        /* Age grid: prefer 4 columns on desktop, 2 on tablet, 1 on narrow */
+        #section2 .features{
+            grid-template-columns: repeat(2, 1fr);
+            align-items: stretch;
+        }
+
+        @media (min-width:900px){
+            #section2 .features{ grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* Make cards consistent height and center content */
+        #section2 .card{ display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:110px }
+
+        @media (max-width:560px){
+            h1{font-size:20px}
+            .hero{flex-direction:column;align-items:flex-start}
+        }
     </style>
 </head>
 <body>
+    <div class="page">
+        <header>
+            <div class="logo">EMR</div>
+            <div>
+                <h1>EMR Mental Health</h1>
+            </div>
+        </header>
 
     <nav class="navbar navbar-inverse visible-xs">
         <div class="container-fluid">
@@ -90,12 +190,12 @@
                 </button>
                 <a class="navbar-brand" href="#">@username test</a>
             </div>
-            <div class="collapse navbar-collapse" id="My-Navbar">
+            <div class="collapse navbar-collapse" id="myNavbar">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">User-Dashboard</a></li>
-                    <li><a href="#">Age</a></li>
-                    <li><a href="#">Gender</a></li>
-                    <li><a href="#">Location</a></li>
+                    <li class="active"><a href="#section1" data-toggle="pill">User-Dashboard</a></li>
+                    <li><a href="#section2" data-toggle="pill">Age</a></li>
+                    <li><a href="#section3" data-toggle="pill">Gender</a></li>
+                    <li><a href="#section4" data-toggle="pill">Location</a></li>
                 </ul>
             </div>
         </div>
@@ -106,83 +206,136 @@
             <div class="col-sm-3 sidenav hidden-xs">
                 <h2>@user Name</h2>
                 <ul class="nav nav-pills nav-stacked">
-                    <li class="active"><a href="#section1">Dashboard</a></li>
-                    <li><a href="#section2">Age</a></li>
-                    <li><a href="#section3">Gender</a></li>
-                    <li><a href="#section3">Location</a></li>
+                    <li class="active"><a href="#section1" data-toggle="pill">Dashboard</a></li>
+                    <li><a href="#section2" data-toggle="pill">Age</a></li>
+                    <li><a href="#section3" data-toggle="pill">Gender</a></li>
+                    <li><a href="#section4" data-toggle="pill">Location</a></li>
                 </ul><br>
             </div>
             <br>
 
             <div class="col-sm-9">
-                <div class="well">
-                    <h4>Dashboard</h4>
-                    <p>I need text here for long term. </p>
-                </div>
-                <div class="row">
-                    <div class="col-sm-3">
-                        <div class="well">
-                            <h4>Users</h4>
-                            <p>1 Million</p>
+                <section class="hero" style="margin-top:0">
+                    <div class="intro">
+                        <h2 style="color:var(--lavender);margin:0 0 6px">Dashboard</h2>
+                        <p style="margin:0;color:#E9DFF7">Quick access to metrics and reports.</p>
+                        <div class="actions" style="margin-top:12px">
+                            <a href="login.html" class="btn custom">Log In</a>
+                            <a href="https://docs.google.com/document/d/1b1k0NWspwYsnq8gtGChDM9a-HhbY0ipM/edit?usp=sharing" class="btn custom secondary" target="_blank" rel="noopener">Learn more</a>
                         </div>
                     </div>
-                    <div class="col-sm-3">
-                        <div class="well">
-                            <h4>Pages</h4>
-                            <p>100 Million</p>
+                    <div style="min-width:160px;max-width:220px">
+                        <div class="card" style="text-align:center">
+                            <strong style="display:block;color:var(--pastel-petal)">Status</strong>
+                            <span style="font-size:28px">Active</span>
                         </div>
                     </div>
-                    <div class="col-sm-3">
+                </section>
+                <div class="tab-content">
+                    <div id="section1" class="tab-pane fade in active">
                         <div class="well">
-                            <h4>Sessions</h4>
-                            <p>10 Million</p>
+                            <h4>Dashboard</h4>
+                            <p>Overview and key metrics for the application.</p>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="well">
+                                    <h4>Users</h4>
+                                    <p>1,000,000</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="well">
+                                    <h4>Pages</h4>
+                                    <p>100,000,000</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="well">
+                                    <h4>Sessions</h4>
+                                    <p>10,000,000</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="well">
+                                    <h4>Bounce</h4>
+                                    <p>30%</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-sm-3">
+
+                    <div id="section2" class="tab-pane fade">
                         <div class="well">
-                            <h4>Bounce</h4>
-                            <p>30%</p>
+                            <h4>Age Distribution</h4>
+                            <p>Sample counts by age group.</p>
+                        </div>
+                        <div class="features">
+                            <div class="card">
+                                <h5>0-17</h5>
+                                <p>150,000 users</p>
+                            </div>
+                            <div class="card">
+                                <h5>18-24</h5>
+                                <p>250,000 users</p>
+                            </div>
+                            <div class="card">
+                                <h5>25-34</h5>
+                                <p>300,000 users</p>
+                            </div>
+                            <div class="card">
+                                <h5>35-54</h5>
+                                <p>200,000 users</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-4">
+
+                    <div id="section3" class="tab-pane fade">
                         <div class="well">
-                            <p>Text</p>
-                            <p>Text</p>
-                            <p>Text</p>
+                            <h4>Gender Breakdown</h4>
+                            <p>Simple gender split sample.</p>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="well">
+                                    <h5>Female</h5>
+                                    <p>560,000 (56%)</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="well">
+                                    <h5>Male</h5>
+                                    <p>440,000 (44%)</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-sm-4">
+
+                    <div id="section4" class="tab-pane fade">
                         <div class="well">
-                            <p>Text</p>
-                            <p>Text</p>
-                            <p>Text</p>
+                            <h4>Top Locations</h4>
+                            <p>Sample top cities by user count.</p>
                         </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="well">
-                            <p>Text</p>
-                            <p>Text</p>
-                            <p>Text</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-8">
-                        <div class="well">
-                            <p>Text</p>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="well">
-                            <p>Text</p>
-                        </div>
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr><th>City</th><th>Users</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>New York</td><td>120,000</td></tr>
+                                <tr><td>Los Angeles</td><td>95,000</td></tr>
+                                <tr><td>Chicago</td><td>60,000</td></tr>
+                                <tr><td>Houston</td><td>50,000</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
+        <footer>
+            EMR Mental Health Designed by Clover
+        </footer>
     </div>
 
 </body>
+
 </html>
