@@ -1,20 +1,33 @@
--- Creates a patient contact list to collect basic information
--- This is a rough draft
+--This is a table for customer information to connect 'EMR mental health database.xlsx' related to the columns
 -- Author: Kamiah Long
--- Date: December 7, 2025
-CREATE TABLE PatientContactList (
-    PatientID INTEGER PRIMARY KEY,     -- Unique identifier for each customer
-    FirstName TEXT NOT NULL,            -- Customer's first name
-    LastName TEXT NOT NULL,             -- Customer's last name
-    Email TEXT NOT NULL,       		   -- Customer's email address
-    PhoneNumber varchar(15),           -- Customer's phone number
-    AddressLine1 varchar(255),         -- First line of the address
-    AddressLine2 varchar(100),         -- Second line of the address (optional)
-    City varchar(255),                 -- City of residence
-    StateST varchar(255),              -- State of residence
-    PostalCode varchar(10),            -- ZIP or postal code
-    Country varchar(50) DEFAULT 'United States', -- Default country
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Record creation timestamp
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Last update timestamp
+CREATE TABLE customers (
+    client_id VARCHAR(10) PRIMARY KEY,
+    full_name VARCHAR(100),
+    dob DATE,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    status VARCHAR(20),
+    last_session DATE
 );
 
+-- This will display a table of the number of sessions per user
+CREATE TABLE sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_date DATE,
+    client_name VARCHAR(100),
+    session_type VARCHAR(50),
+    subjective TEXT,
+    assessment TEXT,
+    signoff VARCHAR(50)
+);
+
+-- This is a table for billing (under the patient portal)
+CREATE TABLE billing (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    billing_date DATE,
+    client_name VARCHAR(100),
+    service_code VARCHAR(20),
+    fee DECIMAL(10,2),
+    insurance_status VARCHAR(50),
+    paid_status VARCHAR(10)
+);
