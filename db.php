@@ -1,7 +1,7 @@
 <?php
 // Database connection settings
 $host = "localhost";
-$dbname = "patient_portal";
+$dbname = "emr_mental_health";
 $username = "root";
 $password = "";
 
