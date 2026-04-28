@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Patient Record – EMR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security-related headers are set on the server:
+       - Content-Security-Policy
+       - X-Frame-Options
+       - X-Content-Type-Options
+       - Referrer-Policy
+       - Strict-Transport-Security
+  -->
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f7fb;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 960px;
+      margin: 2rem auto;
+      background: #ffffff;
+      padding: 1.5rem 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    h1, h2 {
+      margin-top: 0;
+      color: #1f2933;
+    }
+    fieldset {
+      border: 1px solid #d0d7e2;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.25rem;
+    }
+    legend {
+      padding: 0 0.5rem;
+      font-weight: 600;
+      color: #1f2933;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      margin-bottom: 0.75rem;
+      border-radius: 4px;
+      border: 1px solid #cbd2e1;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb33;
+    }
+    .row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .col-6 {
+      flex: 1 1 48%;
+      min-width: 220px;
+    }
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    button {
+      border: none;
+      border-radius: 4px;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .meta {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 1rem;
+    }
+    .readonly {
+      background: #f9fafb;
+    }
+  </style>
+</head>
+<body>
+  <!-- This page must only be served over HTTPS and behind authenticated, authorized access -->
+
+  <div class="container">
+    <h1>Electronic Medical Record</h1>
+    <p class="meta">
+      User: <!-- Inject authenticated username/role from server-side -->
+      <strong><!-- e.g. Dr. Smith (Physician) --></strong><br />
+      Session last activity: <!-- server-side timestamp -->
+    </p>
+
+    <!-- CSRF token and record ID are server-generated -->
+    <form method="POST" action="/emr/save-record">
+      <input type="hidden" name="csrf_token" value="{{CSRF_TOKEN}}" />
+      <input type="hidden" name="record_id" value="{{RECORD_ID}}" />
+
+      <!-- Patient Identification -->
+      <fieldset>
+        <legend>Patient Information</legend>
+        <div class="row">
+          <div class="col-6">
+            <label for="patient_id">Patient ID (MRN)</label>
+            <input id="patient_id" name="patient_id" type="text" class="readonly" value="{{PATIENT_ID}}" readonly />
+          </div>
+          <div class="col-6">
+            <label for="patient_name">Full Name</label>
+            <input id="patient_name" name="patient_name" type="text" class="readonly" value="{{PATIENT_NAME}}" readonly />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <label for="dob">Date of Birth</label>
+            <input id="dob" name="dob" type="date" class="readonly" value="{{DOB}}" readonly />
+          </div>
+          <div class="col-6">
+            <label for="sex">Sex</label>
+            <input id="sex" name="sex" type="text" class="readonly" value="{{SEX}}" readonly />
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Encounter Details -->
+      <fieldset>
+        <legend>Encounter Details</legend>
+        <div class="row">
+          <div class="col-6">
+            <label for="encounter_date">Encounter Date</label>
+            <input id="encounter_date" name="encounter_date" type="date" value="{{ENCOUNTER_DATE}}" required />
+          </div>
+          <div class="col-6">
+            <label for="encounter_type">Encounter Type</label>
+            <select id="encounter_type" name="encounter_type" required>
+              <option value="">Select...</option>
+              <option value="office_visit">Office Visit</option>
+              <option value="telehealth">Telehealth</option>
+              <option value="inpatient">Inpatient</option>
+              <option value="emergency">Emergency</option>
+            </select>
+          </div>
+        </div>
+        <label for="provider">Attending Provider</label>
+        <input id="provider" name="provider" type="text" value="{{PROVIDER_NAME}}" required />
+      </fieldset>
+
+      <!-- Clinical Data -->
+      <fieldset>
+        <legend>Clinical Information</legend>
+
+        <label for="chief_complaint">Chief Complaint</label>
+        <textarea id="chief_complaint" name="chief_complaint" rows="2" maxlength="1000" required></textarea>
+
+        <label for="history_present_illness">History of Present Illness</label>
+        <textarea id="history_present_illness" name="history_present_illness" rows="4" maxlength="4000"></textarea>
+
+        <label for="past_medical_history">Past Medical History</label>
+        <textarea id="past_medical_history" name="past_medical_history" rows="3" maxlength="3000"></textarea>
+
+        <label for="medications">Medications</label>
+        <textarea id="medications" name="medications" rows="3" maxlength="3000"></textarea>
+
+        <label for="allergies">Allergies</label>
+        <textarea id="allergies" name="allergies" rows="2" maxlength="2000"></textarea>
+
+        <label for="exam">Physical Exam</label>
+        <textarea id="exam" name="exam" rows="4" maxlength="4000"></textarea>
+
+        <label for="assessment">Assessment</label>
+        <textarea id="assessment" name="assessment" rows="3" maxlength="3000"></textarea>
+
+        <label for="plan">Plan</label>
+        <textarea id="plan" name="plan" rows="3" maxlength="3000"></textarea>
+      </fieldset>
+
+      <!-- Orders / Codes -->
+      <fieldset>
+        <legend>Orders & Coding</legend>
+
+        <label for="orders">Orders (labs, imaging, referrals)</label>
+        <textarea id="orders" name="orders" rows="3" maxlength="3000"></textarea>
+
+        <label for="diagnosis_codes">Diagnosis Codes (ICD-10)</label>
+        <input id="diagnosis_codes" name="diagnosis_codes" type="text" placeholder="e.g. E11.9; I10" />
+
+        <label for="procedure_codes">Procedure Codes (CPT)</label>
+        <input id="procedure_codes" name="procedure_codes" type="text" placeholder="e.g. 99213" />
+      </fieldset>
+
+      <!-- Signature / Attestation -->
+      <fieldset>
+        <legend>Attestation</legend>
+        <label for="provider_signature">
+          Electronic Signature (type full legal name)
+        </label>
+        <input id="provider_signature" name="provider_signature" type="text" required />
+
+        <label for="attestation_text">
+          Attestation
+        </label>
+        <textarea id="attestation_text" name="attestation_text" rows="2" readonly class="readonly">
+I attest that this record accurately reflects my clinical findings, judgment, and orders for this encounter.
+        </textarea>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+        <button type="submit" class="btn-primary">Save Record</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Minimal JS; avoid inline scripts if using strict CSP -->
+  <script>
+    // Example: automatic session timeout warning could be implemented here,
+    // but actual enforcement should be server-side.
+  </script>
+</body>
+</html>
