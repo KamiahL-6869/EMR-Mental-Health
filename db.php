@@ -79,11 +79,25 @@ $createAppointments = "CREATE TABLE IF NOT EXISTS appointments (
     appointment_date DATETIME NOT NULL,
     appointment_type VARCHAR(100),
     department VARCHAR(50),
-    status ENUM('scheduled', 'confirmed', 'completed', 'cancelled') DEFAULT 'scheduled',
+    status ENUM('scheduled', 'confirmed', 'completed', 'cancelled', 'pending') DEFAULT 'scheduled',
+    pending_action ENUM('change', 'cancel') DEFAULT NULL,
+    pending_date DATETIME DEFAULT NULL,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE
+)";
+
+// Login logs table for security auditing (admin access only)
+$createLoginLogs = "CREATE TABLE IF NOT EXISTS login_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    user_id INT DEFAULT NULL,
+    user_agent VARCHAR(255),
+    outcome ENUM('success', 'failed_password', 'failed_username', 'failed_other') NOT NULL,
+    error_message VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 )";
 
 // Notifications table for patient updates
@@ -124,6 +138,7 @@ $pdo->exec($createSessions);
 $pdo->exec($createBilling);
 $pdo->exec($createAppointments);
 $pdo->exec($createNotifications);
+$pdo->exec($createLoginLogs);
 
 // Add role column if it doesn't exist (for existing tables)
 try {
@@ -135,6 +150,15 @@ try {
     } catch (PDOException $e2) {
         // Ignore if already correct
     }
+}
+
+// Add pending columns to appointments if they don't exist
+try {
+    $pdo->exec("ALTER TABLE appointments MODIFY COLUMN status ENUM('scheduled', 'confirmed', 'completed', 'cancelled', 'pending') DEFAULT 'scheduled'");
+    $pdo->exec("ALTER TABLE appointments ADD COLUMN pending_action ENUM('change', 'cancel') DEFAULT NULL");
+    $pdo->exec("ALTER TABLE appointments ADD COLUMN pending_date DATETIME DEFAULT NULL");
+} catch (PDOException $e) {
+    // Columns already exist
 }
 
 // Insert sample users (password: "password123" for all)
@@ -268,13 +292,14 @@ function timeAgo($datetime) {
 // CUSTOMER/PATIENT MANAGEMENT
 // ===============================
 
-// Search customers by name (for doctor lookup)
+// Search customers by name (for doctor lookup) - only returns patients
 function searchCustomers($pdo, $searchTerm) {
     $stmt = $pdo->prepare("
         SELECT c.*, u.id as user_id, u.username 
         FROM customers c 
         LEFT JOIN users u ON u.customer_id = c.client_id 
-        WHERE c.full_name LIKE ? OR c.client_id LIKE ?
+        WHERE (c.full_name LIKE ? OR c.client_id LIKE ?)
+          AND (u.role = 'patient' OR u.id IS NULL)
         ORDER BY c.full_name ASC
         LIMIT 20
     ");
@@ -346,6 +371,142 @@ function createAppointment($pdo, $patientId, $doctorId, $date, $type, $departmen
         VALUES (?, ?, ?, ?, ?, ?)
     ");
     return $stmt->execute([$patientId, $doctorId, $date, $type, $department, $status]);
+}
+
+// Patient confirms/approves an appointment
+function confirmAppointment($pdo, $appointmentId, $patientId) {
+    $stmt = $pdo->prepare("
+        UPDATE appointments 
+        SET status = 'confirmed' 
+        WHERE id = ? AND patient_id = ? AND status = 'scheduled'
+    ");
+    return $stmt->execute([$appointmentId, $patientId]);
+}
+
+// Patient requests to change an appointment (sets to pending)
+function requestChangeAppointment($pdo, $appointmentId, $patientId, $newDate) {
+    $stmt = $pdo->prepare("
+        UPDATE appointments 
+        SET status = 'pending', pending_action = 'change', pending_date = ?
+        WHERE id = ? AND patient_id = ? AND status IN ('scheduled', 'confirmed')
+    ");
+    return $stmt->execute([$newDate, $appointmentId, $patientId]);
+}
+
+// Patient requests to cancel an appointment (sets to pending)
+function requestCancelAppointment($pdo, $appointmentId, $patientId) {
+    $stmt = $pdo->prepare("
+        UPDATE appointments 
+        SET status = 'pending', pending_action = 'cancel'
+        WHERE id = ? AND patient_id = ? AND status IN ('scheduled', 'confirmed')
+    ");
+    return $stmt->execute([$appointmentId, $patientId]);
+}
+
+// Doctor approves a pending change/cancel request
+function approvePendingRequest($pdo, $appointmentId, $doctorId) {
+    // First get the appointment details
+    $stmt = $pdo->prepare("SELECT * FROM appointments WHERE id = ? AND doctor_id = ? AND status = 'pending'");
+    $stmt->execute([$appointmentId, $doctorId]);
+    $appt = $stmt->fetch();
+    
+    if (!$appt) return false;
+    
+    if ($appt['pending_action'] === 'cancel') {
+        // Approve cancellation
+        $update = $pdo->prepare("UPDATE appointments SET status = 'cancelled', pending_action = NULL, pending_date = NULL WHERE id = ?");
+        return $update->execute([$appointmentId]);
+    } else if ($appt['pending_action'] === 'change' && $appt['pending_date']) {
+        // Approve date change
+        $update = $pdo->prepare("UPDATE appointments SET status = 'confirmed', appointment_date = ?, pending_action = NULL, pending_date = NULL WHERE id = ?");
+        return $update->execute([$appt['pending_date'], $appointmentId]);
+    }
+    return false;
+}
+
+// Doctor denies a pending request (reverts to confirmed)
+function denyPendingRequest($pdo, $appointmentId, $doctorId) {
+    $stmt = $pdo->prepare("
+        UPDATE appointments 
+        SET status = 'confirmed', pending_action = NULL, pending_date = NULL
+        WHERE id = ? AND doctor_id = ? AND status = 'pending'
+    ");
+    return $stmt->execute([$appointmentId, $doctorId]);
+}
+
+// Get pending requests for a doctor
+function getDoctorPendingRequests($pdo, $doctorId) {
+    $stmt = $pdo->prepare("
+        SELECT a.*, u.username as patient_username, c.full_name as patient_name
+        FROM appointments a 
+        JOIN users u ON a.patient_id = u.id 
+        LEFT JOIN customers c ON u.customer_id = c.client_id
+        WHERE a.doctor_id = ? AND a.status = 'pending'
+        ORDER BY a.created_at DESC
+    ");
+    $stmt->execute([$doctorId]);
+    return $stmt->fetchAll();
+}
+
+// ===============================
+// LOGIN LOGGING (Admin only)
+// ===============================
+
+// Log a login attempt
+function logLoginAttempt($pdo, $username, $userId, $outcome, $errorMessage = null) {
+    $userAgent = substr($_SERVER['HTTP_USER_AGENT'] ?? 'unknown', 0, 255);
+    
+    $stmt = $pdo->prepare("
+        INSERT INTO login_logs (username, user_id, user_agent, outcome, error_message)
+        VALUES (?, ?, ?, ?, ?)
+    ");
+    return $stmt->execute([$username, $userId, $userAgent, $outcome, $errorMessage]);
+}
+
+// Get login logs (admin only) with pagination
+function getLoginLogs($pdo, $limit = 50, $offset = 0, $filter = null) {
+    $sql = "
+        SELECT l.*, u.username as linked_username, u.role as user_role
+        FROM login_logs l
+        LEFT JOIN users u ON l.user_id = u.id
+    ";
+    
+    $params = [];
+    if ($filter === 'success') {
+        $sql .= " WHERE l.outcome = 'success'";
+    } else if ($filter === 'failed') {
+        $sql .= " WHERE l.outcome != 'success'";
+    }
+    
+    $sql .= " ORDER BY l.created_at DESC LIMIT ? OFFSET ?";
+    $params[] = $limit;
+    $params[] = $offset;
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll();
+}
+
+// Get login log statistics (admin only)
+function getLoginStats($pdo) {
+    $stats = [];
+    
+    // Total attempts today
+    $stmt = $pdo->query("SELECT COUNT(*) FROM login_logs WHERE DATE(created_at) = CURDATE()");
+    $stats['today_total'] = $stmt->fetchColumn();
+    
+    // Successful logins today
+    $stmt = $pdo->query("SELECT COUNT(*) FROM login_logs WHERE DATE(created_at) = CURDATE() AND outcome = 'success'");
+    $stats['today_success'] = $stmt->fetchColumn();
+    
+    // Failed attempts today
+    $stats['today_failed'] = $stats['today_total'] - $stats['today_success'];
+    
+    // Total all time
+    $stmt = $pdo->query("SELECT COUNT(*) FROM login_logs");
+    $stats['total'] = $stmt->fetchColumn();
+    
+    return $stats;
 }
 ?>
 

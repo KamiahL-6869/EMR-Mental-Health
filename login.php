@@ -17,6 +17,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($user) {
         if (password_verify($password, $user["password_hash"])) {
+            // Log successful login
+            logLoginAttempt($pdo, $username, $user["id"], 'success');
+            
             $_SESSION["user_id"] = $user["id"];
             $_SESSION["username"] = $username;
             $_SESSION["role"] = $user["role"];
@@ -24,9 +27,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             header("Location: dashboard.php");
             exit();
         } else {
+            // Log failed password attempt
+            logLoginAttempt($pdo, $username, $user["id"], 'failed_password', 'Incorrect password');
             $message = "Incorrect password";
         }
     } else {
+        // Log failed username attempt
+        logLoginAttempt($pdo, $username, null, 'failed_username', 'Username not found');
         $message = "Username not found";
     }
 }
@@ -147,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </div>
 
         <div class="login-card">
-        <h2>Staff Login</h2>
+        <h2>Clinic Portal Login</h2>
         <p>Authorized personnel only. All access is monitored and logged.</p>
 
         <?php if ($message): ?>

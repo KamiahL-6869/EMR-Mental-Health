@@ -24,15 +24,118 @@ $doctorAppointments = [];
 $searchResults = [];
 $searchQuery = '';
 
+$patientMessage = '';
+$patientMessageType = '';
+
 if ($isPatient) {
+    // Handle patient appointment actions
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+        $apptId = $_POST['appointment_id'] ?? '';
+        
+        switch ($_POST['action']) {
+            case 'confirm_appointment':
+                if (confirmAppointment($pdo, $apptId, $userId)) {
+                    $patientMessage = 'Appointment confirmed successfully.';
+                    $patientMessageType = 'success';
+                } else {
+                    $patientMessage = 'Unable to confirm appointment.';
+                    $patientMessageType = 'error';
+                }
+                break;
+                
+            case 'request_change':
+                $newDate = $_POST['new_date'] ?? '';
+                $newTime = $_POST['new_time'] ?? '';
+                if ($newDate && $newTime) {
+                    $newDateTime = $newDate . ' ' . $newTime . ':00';
+                    if (requestChangeAppointment($pdo, $apptId, $userId, $newDateTime)) {
+                        $patientMessage = 'Change request submitted. Waiting for doctor approval.';
+                        $patientMessageType = 'success';
+                    } else {
+                        $patientMessage = 'Unable to submit change request.';
+                        $patientMessageType = 'error';
+                    }
+                }
+                break;
+                
+            case 'request_cancel':
+                if (requestCancelAppointment($pdo, $apptId, $userId)) {
+                    $patientMessage = 'Cancellation request submitted. Waiting for doctor approval.';
+                    $patientMessageType = 'success';
+                } else {
+                    $patientMessage = 'Unable to submit cancellation request.';
+                    $patientMessageType = 'error';
+                }
+                break;
+        }
+    }
+    
     $appointments = getPatientAppointments($pdo, $userId);
     $notifications = getUserNotifications($pdo, $userId);
     $nextAppointment = getNextAppointment($pdo, $userId);
     $unreadCount = getUnreadNotificationCount($pdo, $userId);
 }
 
+$doctorMessage = '';
+$doctorMessageType = '';
+
+$pendingRequests = [];
+
 if ($isDoctor) {
+    // Handle appointment creation
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+        $action = $_POST['action'];
+        
+        if ($action === 'create_appointment') {
+            $patientUserId = $_POST['patient_id'] ?? '';
+            $apptDate = $_POST['appointment_date'] ?? '';
+            $apptTime = $_POST['appointment_time'] ?? '';
+            $apptType = trim($_POST['appointment_type'] ?? '');
+            $department = trim($_POST['department'] ?? '');
+            
+            if (empty($patientUserId) || empty($apptDate) || empty($apptTime) || empty($apptType)) {
+                $doctorMessage = 'Please fill in all required fields.';
+                $doctorMessageType = 'error';
+            } else {
+                try {
+                    $apptDateTime = $apptDate . ' ' . $apptTime . ':00';
+                    createAppointment($pdo, $patientUserId, $userId, $apptDateTime, $apptType, $department, 'scheduled');
+                    
+                    // Get patient name for message
+                    $patientStmt = $pdo->prepare("SELECT c.full_name FROM users u LEFT JOIN customers c ON u.customer_id = c.client_id WHERE u.id = ?");
+                    $patientStmt->execute([$patientUserId]);
+                    $patientName = $patientStmt->fetchColumn() ?: 'Patient';
+                    
+                    $doctorMessage = "Appointment scheduled with {$patientName} for " . date('M j, Y \a\t g:i A', strtotime($apptDateTime));
+                    $doctorMessageType = 'success';
+                } catch (PDOException $e) {
+                    $doctorMessage = 'Error creating appointment: ' . $e->getMessage();
+                    $doctorMessageType = 'error';
+                }
+            }
+        } else if ($action === 'approve_request') {
+            $apptId = $_POST['appointment_id'] ?? '';
+            if (approvePendingRequest($pdo, $apptId, $userId)) {
+                $doctorMessage = 'Request approved successfully.';
+                $doctorMessageType = 'success';
+            } else {
+                $doctorMessage = 'Unable to approve request.';
+                $doctorMessageType = 'error';
+            }
+        } else if ($action === 'deny_request') {
+            $apptId = $_POST['appointment_id'] ?? '';
+            if (denyPendingRequest($pdo, $apptId, $userId)) {
+                $doctorMessage = 'Request denied. Appointment restored.';
+                $doctorMessageType = 'success';
+            } else {
+                $doctorMessage = 'Unable to deny request.';
+                $doctorMessageType = 'error';
+            }
+        }
+    }
+    
     $doctorAppointments = getDoctorAppointments($pdo, $userId);
+    $pendingRequests = getDoctorPendingRequests($pdo, $userId);
     
     // Handle patient search
     if (isset($_GET['search']) && !empty($_GET['search'])) {
@@ -114,6 +217,11 @@ if ($isAdmin) {
             }
         }
     }
+    
+    // Fetch login logs for admin
+    $loginFilter = $_GET['log_filter'] ?? null;
+    $loginLogs = getLoginLogs($pdo, 50, 0, $loginFilter);
+    $loginStats = getLoginStats($pdo);
 }
 ?>
 <!DOCTYPE html>
@@ -356,6 +464,42 @@ if ($isAdmin) {
             color: #68D391;
         }
 
+        .status.pending {
+            background: rgba(237,187,106,0.2);
+            color: #EDB96A;
+        }
+
+        .status.scheduled {
+            background: rgba(134,97,193,0.25);
+            color: var(--lilac);
+        }
+
+        .pending-request {
+            background: rgba(237,187,106,0.08);
+            border: 1px solid rgba(237,187,106,0.25);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+        }
+
+        .pending-request h4 {
+            margin: 0 0 6px;
+            color: #EDB96A;
+            font-size: 14px;
+        }
+
+        .pending-request p {
+            margin: 0 0 4px;
+            font-size: 13px;
+            color: #C9B8D9;
+        }
+
+        .pending-request .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
         .empty-state {
             text-align: center;
             padding: 32px;
@@ -516,6 +660,58 @@ if ($isAdmin) {
             font-size: 13px;
         }
 
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(180deg, rgba(46,41,78,0.98), rgba(75,82,103,0.95));
+            border: 2px solid var(--lilac);
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal h3 {
+            margin: 0 0 8px;
+            color: var(--pastel-petal);
+            font-size: 18px;
+        }
+
+        .modal p {
+            margin: 0 0 20px;
+            color: var(--lilac);
+            font-size: 14px;
+        }
+
+        .modal .form-group {
+            margin-bottom: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
         @media (max-width:560px) {
             h1 { font-size: 20px }
             header { flex-direction: column; align-items: flex-start; }
@@ -544,6 +740,7 @@ if ($isAdmin) {
             <?php if ($isAdmin): ?>
                 <button type="button" class="tab-btn" data-target="schedule" aria-selected="false">Schedule</button>
                 <button type="button" class="tab-btn" data-target="users" aria-selected="false">Users</button>
+                <button type="button" class="tab-btn" data-target="loginlogs" aria-selected="false">Login Logs</button>
             <?php elseif ($isDoctor): ?>
                 <button type="button" class="tab-btn" data-target="schedule" aria-selected="false">My Schedule</button>
                 <button type="button" class="tab-btn" data-target="patients" aria-selected="false">My Patients</button>
@@ -587,6 +784,41 @@ if ($isAdmin) {
             <div class="card">
                 <h2><?php echo $isAdmin ? 'Schedule' : 'My Schedule'; ?></h2>
                 <?php if ($isDoctor): ?>
+                    <?php if ($doctorMessage): ?>
+                        <div class="alert <?php echo $doctorMessageType; ?>" style="margin-bottom:16px;">
+                            <?php echo htmlspecialchars($doctorMessage); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($pendingRequests)): ?>
+                        <h3 style="color:#EDB96A;font-size:14px;margin:0 0 12px;">Pending Requests (<?php echo count($pendingRequests); ?>)</h3>
+                        <?php foreach ($pendingRequests as $req): ?>
+                            <div class="pending-request">
+                                <h4>
+                                    <?php echo $req['pending_action'] === 'cancel' ? 'Cancellation Request' : 'Reschedule Request'; ?>
+                                    from <?php echo htmlspecialchars($req['patient_name'] ?? $req['patient_username']); ?>
+                                </h4>
+                                <p><strong>Appointment:</strong> <?php echo htmlspecialchars($req['appointment_type']); ?> on <?php echo date('M j, Y \a\t g:i A', strtotime($req['appointment_date'])); ?></p>
+                                <?php if ($req['pending_action'] === 'change' && $req['pending_date']): ?>
+                                    <p><strong>Requested new time:</strong> <?php echo date('M j, Y \a\t g:i A', strtotime($req['pending_date'])); ?></p>
+                                <?php endif; ?>
+                                <div class="actions">
+                                    <form method="POST" action="?tab=schedule" style="display:inline;">
+                                        <input type="hidden" name="action" value="approve_request">
+                                        <input type="hidden" name="appointment_id" value="<?php echo $req['id']; ?>">
+                                        <button type="submit" class="btn" style="padding:6px 12px;font-size:13px;">Approve</button>
+                                    </form>
+                                    <form method="POST" action="?tab=schedule" style="display:inline;">
+                                        <input type="hidden" name="action" value="deny_request">
+                                        <input type="hidden" name="appointment_id" value="<?php echo $req['id']; ?>">
+                                        <button type="submit" class="btn secondary" style="padding:6px 12px;font-size:13px;">Deny</button>
+                                    </form>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                        <hr style="border:none;border-top:1px solid rgba(190,151,198,0.2);margin:20px 0;">
+                    <?php endif; ?>
+
                     <p>Your upcoming appointments with patients.</p>
                     <div class="appointment-list">
                         <?php if (empty($doctorAppointments)): ?>
@@ -600,7 +832,7 @@ if ($isAdmin) {
                                         <h4><?php echo htmlspecialchars($appt['appointment_type']); ?> with <?php echo htmlspecialchars($appt['patient_name'] ?? $appt['patient_username']); ?></h4>
                                         <p><?php echo date('M j, Y \a\t g:i A', strtotime($appt['appointment_date'])); ?> • <?php echo htmlspecialchars($appt['department']); ?></p>
                                     </div>
-                                    <span class="status <?php echo $appt['status'] === 'confirmed' ? 'confirmed' : 'upcoming'; ?>">
+                                    <span class="status <?php echo $appt['status'] === 'confirmed' ? 'confirmed' : 'scheduled'; ?>">
                                         <?php echo ucfirst($appt['status']); ?>
                                     </span>
                                 </div>
@@ -710,11 +942,87 @@ if ($isAdmin) {
                 </div>
             </div>
         </section>
+        <section id="loginlogs" class="tabcontent" hidden>
+            <div class="card">
+                <h2>Login Logs</h2>
+                <p>Security audit log of all login attempts. All access is monitored and recorded.</p>
+
+                <div style="display:flex;gap:16px;margin:16px 0;flex-wrap:wrap;">
+                    <div class="card" style="flex:1;min-width:140px;padding:16px;">
+                        <h3 style="margin:0 0 4px;font-size:12px;color:var(--lilac);">Today's Attempts</h3>
+                        <p style="margin:0;font-size:24px;color:var(--pastel-petal);"><?php echo $loginStats['today_total']; ?></p>
+                    </div>
+                    <div class="card" style="flex:1;min-width:140px;padding:16px;">
+                        <h3 style="margin:0 0 4px;font-size:12px;color:var(--lilac);">Successful</h3>
+                        <p style="margin:0;font-size:24px;color:#68D391;"><?php echo $loginStats['today_success']; ?></p>
+                    </div>
+                    <div class="card" style="flex:1;min-width:140px;padding:16px;">
+                        <h3 style="margin:0 0 4px;font-size:12px;color:var(--lilac);">Failed</h3>
+                        <p style="margin:0;font-size:24px;color:#FC8181;"><?php echo $loginStats['today_failed']; ?></p>
+                    </div>
+                    <div class="card" style="flex:1;min-width:140px;padding:16px;">
+                        <h3 style="margin:0 0 4px;font-size:12px;color:var(--lilac);">Total All Time</h3>
+                        <p style="margin:0;font-size:24px;color:var(--pastel-petal);"><?php echo $loginStats['total']; ?></p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <a href="?tab=loginlogs" class="btn <?php echo !$loginFilter ? '' : 'secondary'; ?>" style="padding:6px 12px;font-size:13px;">All</a>
+                    <a href="?tab=loginlogs&log_filter=success" class="btn <?php echo $loginFilter === 'success' ? '' : 'secondary'; ?>" style="padding:6px 12px;font-size:13px;">Successful</a>
+                    <a href="?tab=loginlogs&log_filter=failed" class="btn <?php echo $loginFilter === 'failed' ? '' : 'secondary'; ?>" style="padding:6px 12px;font-size:13px;">Failed</a>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Username</th>
+                                <th>Outcome</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($loginLogs)): ?>
+                                <tr><td colspan="4" style="text-align:center;color:#A89BBF;">No login attempts recorded yet.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($loginLogs as $log): ?>
+                                    <tr>
+                                        <td><?php echo date('M j, Y g:i A', strtotime($log['created_at'])); ?></td>
+                                        <td>
+                                            <?php echo htmlspecialchars($log['username']); ?>
+                                            <?php if ($log['user_role']): ?>
+                                                <span class="role-badge" style="font-size:10px;padding:2px 6px;background:<?php 
+                                                    echo $log['user_role'] === 'admin' ? 'var(--pastel-petal)' : 
+                                                        ($log['user_role'] === 'doctor' ? 'var(--lilac)' : 'var(--lavender)'); 
+                                                ?>;"><?php echo ucfirst($log['user_role']); ?></span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <span class="status <?php echo $log['outcome'] === 'success' ? 'confirmed' : 'pending'; ?>">
+                                                <?php echo $log['outcome'] === 'success' ? 'Success' : 'Failed'; ?>
+                                            </span>
+                                        </td>
+                                        <td style="color:#A89BBF;font-size:12px;"><?php echo htmlspecialchars($log['error_message'] ?? '—'); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
         <?php elseif ($isDoctor): ?>
         <section id="patients" class="tabcontent" hidden>
             <div class="card">
                 <h2>My Patients</h2>
                 <p>Search for patients by name to view their records or schedule appointments.</p>
+
+                <?php if ($doctorMessage): ?>
+                    <div class="alert <?php echo $doctorMessageType; ?>">
+                        <?php echo htmlspecialchars($doctorMessage); ?>
+                    </div>
+                <?php endif; ?>
                 
                 <form method="GET" action="" style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
                     <input type="hidden" name="tab" value="patients">
@@ -755,7 +1063,7 @@ if ($isAdmin) {
                                         <div class="patient-actions">
                                             <?php if ($patient['user_id']): ?>
                                                 <button class="btn secondary" onclick="alert('View patient record feature coming soon!');">View Record</button>
-                                                <button class="btn" onclick="alert('Schedule appointment feature coming soon!');">Schedule</button>
+                                                <button class="btn" onclick="openScheduleModal(<?php echo $patient['user_id']; ?>, '<?php echo htmlspecialchars(addslashes($patient['full_name'])); ?>');">Schedule</button>
                                             <?php else: ?>
                                                 <span style="font-size:12px;color:#A89BBF;">No user account linked</span>
                                             <?php endif; ?>
@@ -773,24 +1081,60 @@ if ($isAdmin) {
             <div class="card">
                 <h2>My Appointments</h2>
                 <p>View and manage your scheduled appointments with your care team.</p>
-                <div style="margin-top:16px;">
-                    <button class="btn" onclick="alert('Schedule appointment feature coming soon!');">+ Schedule New Appointment</button>
-                </div>
-                <div class="appointment-list">
+
+                <?php if ($patientMessage): ?>
+                    <div class="alert <?php echo $patientMessageType; ?>">
+                        <?php echo htmlspecialchars($patientMessage); ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="appointment-list" style="margin-top:16px;">
                     <?php if (empty($appointments)): ?>
                         <div class="empty-state">
                             <p>No upcoming appointments scheduled.</p>
                         </div>
                     <?php else: ?>
                         <?php foreach ($appointments as $appt): ?>
-                            <div class="appointment-item">
-                                <div class="details">
-                                    <h4><?php echo htmlspecialchars($appt['appointment_type']); ?> with <?php echo formatDoctorName($appt['doctor_name']); ?></h4>
-                                    <p><?php echo date('M j, Y \a\t g:i A', strtotime($appt['appointment_date'])); ?> • <?php echo htmlspecialchars($appt['department']); ?></p>
+                            <div class="appointment-item" style="flex-direction:column;align-items:stretch;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                    <div class="details">
+                                        <h4><?php echo htmlspecialchars($appt['appointment_type']); ?> with <?php echo formatDoctorName($appt['doctor_name']); ?></h4>
+                                        <p><?php echo date('M j, Y \a\t g:i A', strtotime($appt['appointment_date'])); ?> • <?php echo htmlspecialchars($appt['department']); ?></p>
+                                    </div>
+                                    <span class="status <?php echo $appt['status'] === 'confirmed' ? 'confirmed' : ($appt['status'] === 'pending' ? 'pending' : 'upcoming'); ?>">
+                                        <?php echo ucfirst($appt['status']); ?>
+                                        <?php if ($appt['status'] === 'pending' && isset($appt['pending_action'])): ?>
+                                            (<?php echo $appt['pending_action'] === 'cancel' ? 'Cancellation' : 'Change'; ?> Requested)
+                                        <?php endif; ?>
+                                    </span>
                                 </div>
-                                <span class="status <?php echo $appt['status'] === 'confirmed' ? 'confirmed' : 'upcoming'; ?>">
-                                    <?php echo ucfirst($appt['status']); ?>
-                                </span>
+                                <?php if ($appt['status'] !== 'pending'): ?>
+                                <div class="appointment-actions" style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+                                    <?php if ($appt['status'] === 'scheduled'): ?>
+                                        <form method="POST" action="?tab=appointments" style="display:inline;">
+                                            <input type="hidden" name="action" value="confirm_appointment">
+                                            <input type="hidden" name="appointment_id" value="<?php echo $appt['id']; ?>">
+                                            <button type="submit" class="btn" style="padding:6px 12px;font-size:13px;">Confirm</button>
+                                        </form>
+                                    <?php endif; ?>
+                                    <button type="button" class="btn secondary" style="padding:6px 12px;font-size:13px;" 
+                                            onclick="openChangeModal(<?php echo $appt['id']; ?>, '<?php echo date('Y-m-d', strtotime($appt['appointment_date'])); ?>', '<?php echo date('H:i', strtotime($appt['appointment_date'])); ?>');">
+                                        Request Change
+                                    </button>
+                                    <form method="POST" action="?tab=appointments" style="display:inline;" onsubmit="return confirm('Are you sure you want to request cancellation?');">
+                                        <input type="hidden" name="action" value="request_cancel">
+                                        <input type="hidden" name="appointment_id" value="<?php echo $appt['id']; ?>">
+                                        <button type="submit" class="btn secondary" style="padding:6px 12px;font-size:13px;color:#FC8181;border-color:rgba(252,129,129,0.3);">Cancel</button>
+                                    </form>
+                                </div>
+                                <?php else: ?>
+                                <div style="margin-top:12px;font-size:13px;color:var(--lilac);">
+                                    Waiting for doctor approval...
+                                    <?php if ($appt['pending_action'] === 'change' && $appt['pending_date']): ?>
+                                        <br>Requested new time: <?php echo date('M j, Y \a\t g:i A', strtotime($appt['pending_date'])); ?>
+                                    <?php endif; ?>
+                                </div>
+                                <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -832,6 +1176,94 @@ if ($isAdmin) {
         </footer>
     </div>
 
+    <?php if ($isDoctor): ?>
+    <!-- Schedule Appointment Modal -->
+    <div id="scheduleModal" class="modal-overlay" onclick="if(event.target === this) closeScheduleModal();">
+        <div class="modal">
+            <h3>Schedule Appointment</h3>
+            <p id="modalPatientName">with Patient Name</p>
+            
+            <form method="POST" action="?tab=patients">
+                <input type="hidden" name="action" value="create_appointment">
+                <input type="hidden" name="patient_id" id="modalPatientId">
+                
+                <div class="form-group">
+                    <label for="appointment_date">Date *</label>
+                    <input type="date" id="appointment_date" name="appointment_date" required 
+                           min="<?php echo date('Y-m-d'); ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="appointment_time">Time *</label>
+                    <input type="time" id="appointment_time" name="appointment_time" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="appointment_type">Appointment Type *</label>
+                    <select id="appointment_type" name="appointment_type" required>
+                        <option value="">Select type...</option>
+                        <option value="Initial Consultation">Initial Consultation</option>
+                        <option value="Follow-up Session">Follow-up Session</option>
+                        <option value="Therapy Session">Therapy Session</option>
+                        <option value="Medication Review">Medication Review</option>
+                        <option value="Check-in">Check-in</option>
+                        <option value="Crisis Intervention">Crisis Intervention</option>
+                        <option value="Group Therapy">Group Therapy</option>
+                        <option value="Assessment">Assessment</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="department">Department</label>
+                    <select id="department" name="department">
+                        <option value="General">General</option>
+                        <option value="Psychiatry">Psychiatry</option>
+                        <option value="Psychology">Psychology</option>
+                        <option value="Counseling">Counseling</option>
+                        <option value="Social Work">Social Work</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn secondary" onclick="closeScheduleModal();">Cancel</button>
+                    <button type="submit" class="btn">Schedule Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($isPatient): ?>
+    <!-- Request Change Modal -->
+    <div id="changeModal" class="modal-overlay" onclick="if(event.target === this) closeChangeModal();">
+        <div class="modal">
+            <h3>Request Appointment Change</h3>
+            <p>Select a new date and time for your appointment. Your doctor will need to approve this change.</p>
+            
+            <form method="POST" action="?tab=appointments">
+                <input type="hidden" name="action" value="request_change">
+                <input type="hidden" name="appointment_id" id="changeApptId">
+                
+                <div class="form-group">
+                    <label for="new_date">New Date *</label>
+                    <input type="date" id="new_date" name="new_date" required 
+                           min="<?php echo date('Y-m-d'); ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="new_time">New Time *</label>
+                    <input type="time" id="new_time" name="new_time" required>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn secondary" onclick="closeChangeModal();">Cancel</button>
+                    <button type="submit" class="btn">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <script>
         (function(){
             const tabs = document.querySelectorAll('.tab-btn');
@@ -852,7 +1284,7 @@ if ($isAdmin) {
                 t.addEventListener('click', () => show(t.getAttribute('data-target')));
             });
 
-            // Check URL params for tab preference (e.g., after search)
+            // Check URL params for tab preference (e.g., after search or form submission)
             const urlParams = new URLSearchParams(window.location.search);
             const tabParam = urlParams.get('tab');
             const searchParam = urlParams.get('search');
@@ -866,6 +1298,45 @@ if ($isAdmin) {
                 show(tabs[0].getAttribute('data-target'));
             }
         })();
+
+        // Doctor: Modal functions for scheduling
+        function openScheduleModal(patientId, patientName) {
+            const modal = document.getElementById('scheduleModal');
+            if (modal) {
+                document.getElementById('modalPatientId').value = patientId;
+                document.getElementById('modalPatientName').textContent = 'with ' + patientName;
+                modal.classList.add('active');
+            }
+        }
+
+        function closeScheduleModal() {
+            const modal = document.getElementById('scheduleModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        // Patient: Modal functions for change request
+        function openChangeModal(apptId, currentDate, currentTime) {
+            const modal = document.getElementById('changeModal');
+            if (modal) {
+                document.getElementById('changeApptId').value = apptId;
+                document.getElementById('new_date').value = currentDate;
+                document.getElementById('new_time').value = currentTime;
+                modal.classList.add('active');
+            }
+        }
+
+        function closeChangeModal() {
+            const modal = document.getElementById('changeModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeScheduleModal();
+                closeChangeModal();
+            }
+        });
     </script>
 </body>
 </html>
