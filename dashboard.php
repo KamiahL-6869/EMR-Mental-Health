@@ -1168,6 +1168,7 @@ if ($isAdmin) {
             <div class="card">
                 <h2>Patch Notes</h2>
                 <p>Version 0.0.0 Updated by Clover</p>
+                <p>Version 0.0.1 Updated by Clover: Initial setup of EMR dashboard</p>
             </div>
         </section>
 
